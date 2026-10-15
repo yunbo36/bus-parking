@@ -73,7 +73,7 @@ async function mergeJSON(e){
   const data=JSON.parse(await file.text());
   if(!Array.isArray(data.records)||!data.records.every(r=>r&&typeof r.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&String(r.room||'').trim()&&['当駐車場','別駐車場','トレイルイン十和田','若葉公園北待機場所','未定'].includes(r.location)))throw Error('対応していないデータ形式です');
   const key=r=>r.date+'|'+String(r.room).trim();
-  const norm=r=>JSON.stringify([r.date,String(r.room).trim(),r.company||'',r.person||'',r.busId||'',r.location||'',r.status||'',r.note||'']);
+  const norm=r=>JSON.stringify([r.date,String(r.room).trim(),r.company||'',r.person||'',r.busId||'',r.location||'',r.status||'',r.note||'',r.checkinCode||'']);
   const incoming=new Map();for(const r of data.records)incoming.set(key(r),r);
   let added=0,same=0,conflicts=0,replaced=0,kept=0;
   const next=records.map(r=>({...r}));
@@ -91,7 +91,7 @@ async function mergeJSON(e){
    const old=next[i];
    const fmt=x=>`会社：${x.company||''} / 担当：${x.person||''}\n駐車場：${x.location||''} / バスID：${x.busId||'なし'}\n状況：${x.status||''}\n備考：${x.note||''}`;
    if(confirm(`${r.date}  部屋${r.room} の内容が異なります。\n\n【この端末】\n${fmt(old)}\n\n【LINEから受信】\n${fmt(r)}\n\nOK：受信データで更新\nキャンセル：この端末の内容を維持`)){
-    next[i]={...r,id:old.id};replaced++;
+    next[i]={...old,...r,id:old.id,checkinCode:r.checkinCode||old.checkinCode||''};replaced++;
    }else kept++;
   }
   records=next;persist();render();
