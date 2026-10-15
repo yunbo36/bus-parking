@@ -31,7 +31,7 @@ async function importRosterUpdate(e){
  const file=e.target.files[0];if(!file)return;
  try{
   const data=JSON.parse(await file.text());
-  if(data.app!=='bus-parking-roster-update-v1'||!Array.isArray(data.entries)||!data.entries.length||!data.entries.every(r=>/^2026-10-\\d{2}$/.test(r.date)&&/^\\d{3}$/.test(String(r.room))&&typeof r.company==='string'&&typeof r.person==='string'&&/^\\d{6}$/.test(String(r.checkinCode))))throw Error('後半部屋割り更新用JSONではありません');
+  if(data.app!=='bus-parking-roster-update-v1'||!Array.isArray(data.entries)||!data.entries.length||!data.entries.every(r=>/^2026-10-\d{2}$/.test(r.date)&&/^\d{3}$/.test(String(r.room))&&typeof r.company==='string'&&typeof r.person==='string'&&/^\d{6}$/.test(String(r.checkinCode))))throw Error('後半部屋割り更新用JSONではありません');
   const keys=new Set();for(const r of data.entries){const k=r.date+'|'+r.room;if(keys.has(k))throw Error('同じ日・部屋が重複しています');keys.add(k)}
   const next=records.map(r=>({...r}));let added=0,changed=0,unchanged=0;
   for(const src of data.entries){
@@ -44,7 +44,7 @@ async function importRosterUpdate(e){
     next[idx]={...old,company:src.company,person:src.person,checkinCode:src.checkinCode};
    }
   }
-  if(!confirm('後半部屋割りを適用します。\\n\\n新規予定：'+added+'件\\n予定表の更新：'+changed+'件\\n変更なし：'+unchanged+'件\\n\\n既存のバスID・駐車場・確認状況・備考は保持します。\\n旅行会社・担当者・チェックインコードのみ原票に更新します。\\n\\n適用しますか？'))return;
+  if(!confirm('後半部屋割りを適用します。\n\n新規予定：'+added+'件\n予定表の更新：'+changed+'件\n変更なし：'+unchanged+'件\n\n既存のバスID・駐車場・確認状況・備考は保持します。\n旅行会社・担当者・チェックインコードのみ原票に更新します。\n\n適用しますか？'))return;
   records=next;persist();render();alert('後半部屋割りを適用しました。日付を選んで確認してください。');
  }catch(err){alert('取り込めません：'+err.message)}finally{e.target.value=''}
 }
